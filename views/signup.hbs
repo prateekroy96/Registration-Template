@@ -1,0 +1,151 @@
+<section id="unique">
+    <div style="margin:auto;width:500px;padding-top: calc(0.3 * (100vh - 530px));">
+
+
+        <!-- Dropdown Structure -->
+        <ul id='dropdown1' class='dropdown-content'>
+            <li><a href="../login">Login</a></li>
+            <li><a href="../signup">Sign up</a></li>
+            <li><a href="../deactivate">Deactivate</a></li>
+        </ul>
+
+        <form style="position: relative;padding:30px;background-color: rgba(33,65,84,0.9)">
+            <!-- Dropdown Trigger -->
+            <a class='dropdown-trigger' href='#' data-target='dropdown1'
+                style="position: absolute;top:10px;right:10px"><i
+                    class="small material-icons white-text">more_vert</i></a>
+            <h3 class="white-text" align="center" style="margin-bottom: 30px">Sign Up</h3>
+
+            <div class="input-field">
+                <input class="white-text validate" id="firstname" type="text" name="[firstname]">
+                <label class="white-text" for="firstname">First name</label>
+            </div>
+            <div class="input-field">
+                <input class="white-text validate" id="lastname" type="text" name="[lastname]">
+                <label class="white-text" for="lastname">Last name</label>
+            </div>
+            <div class="input-field">
+                <input class="white-text validate" id="username" type="text" name="[username]">
+                <label class="white-text" for="username">Username</label>
+            </div>
+            <div class="input-field">
+                <input class="white-text validate pass" id="pass" type="password" name="[password]">
+                <label class="white-text" for="pass">Password</label>
+            </div>
+            <div class="input-field">
+                <input class="white-text validate pass" id="cpass" type="password">
+                <label class="white-text" for="cpass">Confirm Password</label>
+            </div>
+            <div>
+                <p class="white-text" id="lenCheck">
+                    <i class="tiny material-icons" style="position:relative; top:2px">close</i> Password must be 8
+                    characters long.
+                </p>
+                <p class="white-text" id="numCheck">
+                    <i class="tiny material-icons" style="position:relative; top:2px">close</i> Password must have a
+                    number.
+                </p>
+                <p class="white-text" id="matchCheck">
+                    <i class="tiny material-icons" style="position:relative; top:2px">close</i> Confirm password
+                    must
+                    match.
+                </p>
+
+            </div>
+            <div align="center">
+                <button class="btn waves-effect waves-light" type="submit">Sign Up
+                </button>
+                <b><small id="msg" style="display: block;margin-top: 10px;height: 15px;"></small></b>
+                <div class="progress" style="visibility:hidden; margin-top: 20px;">
+                    <div class="indeterminate"></div>
+                </div>
+            </div>
+
+
+
+        </form>
+    </div>
+
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+    <script>
+        $(() => {
+
+            $(".dropdown-trigger").dropdown();
+
+            let lenCheck = false;
+            let numCheck = false;
+            let matchCheck = false;
+            let check = function (id) {
+                $(id + " > i").text('check');
+                $(id).css('color', 'teal')
+            }
+            let uncheck = function (id) {
+                $(id + " > i").text('close');
+                $(id).css('color', 'grey')
+            }
+
+
+            $(".pass").keyup(function (e) {
+                let pass1 = $('#pass').val();
+                let pass2 = $('#cpass').val();
+                console.log(pass1, pass2);
+                (lenCheck = pass1.length >= 8) ? check("#lenCheck") : uncheck("#lenCheck");
+                (numCheck = pass1.match(/(\d)/)) ? check("#numCheck") : uncheck("#numCheck");
+                (matchCheck = (pass1 === pass2 && pass1 != '')) ? check("#matchCheck") : uncheck("#matchCheck");
+            })
+
+            var timer;
+            $msg = $('#msg');
+            function setMsg(msg, isGood) {
+                let delay = 3000;
+                clearTimeout(timer);
+                isGood ? $msg.css('color', 'teal') : $msg.css('color', '#ee6e73');
+                $msg.text(msg);
+                timer = setTimeout(function () {
+                    $msg.text('');
+                }, delay)
+            }
+
+            $('form').submit(function (e) {
+                e.preventDefault();
+
+                let unindexed_array = $(this).serializeArray();
+                let indexed_array = {};
+                let complete = true;
+
+                $.map(unindexed_array, function (n, i) {
+                    indexed_array[n['name']] = n['value'];
+                    complete = complete && n['value'];
+                });
+
+                if (complete) {
+                    if (lenCheck && numCheck && matchCheck) {
+                        $('.progress').css('visibility', 'visible');
+                        indexed_array['type'] = 'regis';
+                        console.log("posting", indexed_array);
+                        $.post("auth/signup", indexed_array, function (res) {
+                            console.log("callback", res);
+                            setMsg(res.msg, res.success);
+                        })
+                            .done()
+                            .fail((err) => setMsg('Connection Failure', false))
+                            .always(() => $('.progress').css('visibility', 'hidden'))
+                    }
+                    else {
+                        setMsg("Password doesn't meet criteria", false)
+                    }
+
+
+                }
+                else {
+                    setMsg('Incomplete data!', false)
+                }
+
+            })
+
+        })
+    </script>
+</section>

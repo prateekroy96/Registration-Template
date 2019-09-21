@@ -1,0 +1,101 @@
+<section id="unique">
+  <div style="margin:auto;width:500px;padding-top: calc(0.3 * (100vh - 330px));">
+
+
+    <!-- Dropdown Structure -->
+    <ul id='dropdown1' class='dropdown-content'>
+      <li><a href="../login">Login</a></li>
+      <li><a href="../signup">Sign up</a></li>
+      <li><a href="../deactivate">Deactivate</a></li>
+    </ul>
+
+    <form align="center" style="position: relative;padding:30px;background-color: rgba(33,65,84,0.9)">
+      <!-- Dropdown Trigger -->
+      <a class='dropdown-trigger' href='#' data-target='dropdown1' style="position: absolute;top:10px;right:10px"><i
+          class="small material-icons white-text">more_vert</i></a>
+      <h3 class="white-text" align="center" style="margin-bottom: 30px">Login</h3>
+
+      <div class="input-field">
+        <input id="username" type="text" class="validate white-text" name="[username]">
+        <label class="white-text" for="username">Username</label>
+      </div>
+      <div class="input-field">
+        <input id="pass" type="password" class="validate white-text" name="[password]">
+        <label class="white-text" for="pass">Password</label>
+      </div>
+      <button class="btn waves-effect waves-light" type="submit">Login
+      </button>
+
+      <div align="center" class="col s6 offset-s3" style="margin-top:20px">
+        <span class="white-text" style="padding-right:20px">Don't have an account?</span>
+        <a href="../signup">
+          <b style="color: #26a69a">Sign Up</b>
+        </a>
+        <b><small id="msg" style="display: block;margin-top: 10px;height: 15px;"></small></b>
+        <div class="progress" style="visibility: hidden; margin-top: 20px;">
+          <div class="indeterminate"></div>
+        </div>
+      </div>
+
+
+    </form>
+  </div>
+
+  <!-- Compiled and minified JavaScript -->
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <script>
+    $(() => {
+
+      $(".dropdown-trigger").dropdown();
+
+      var timer;
+      $msg = $('#msg');
+      function setMsg(msg, isGood) {
+        console.log("invoked setMsg....")
+        let delay = 3000;
+        clearTimeout(timer);
+        isGood ? $msg.css('color', 'teal') : $msg.css('color', '#ee6e73');
+        $msg.text(msg);
+        timer = setTimeout(function () {
+          $msg.text('');
+        }, delay)
+      }
+
+      $('form').submit(function (e) {
+        e.preventDefault();
+
+        let unindexed_array = $(this).serializeArray();
+        let indexed_array = {};
+        let complete = true;
+
+        $.map(unindexed_array, function (n, i) {
+          indexed_array[n['name']] = n['value'];
+          complete = complete && n['value'];
+        });
+
+        if (complete) {
+          $('.progress').css('visibility', 'visible');
+          indexed_array['type'] = 'login';
+          console.log("posting", indexed_array);
+
+          $.post("auth/login", indexed_array, function (res) {
+            console.log("callback", res, res.msg, res.success);
+            //setMsg(res.msg, res.success);
+          })
+            .done((res) => res.success ? window.location.replace("../dashboard") : setMsg(res.msg, res.success))
+              .fail((err) => setMsg('Connection Failure', false))
+              .always(() => $('.progress').css('visibility', 'hidden'))
+
+        }
+        else {
+          console.log("incomplete data");
+          setMsg('Incomplete data!', false)
+        }
+
+      })
+
+    })
+  </script>
+</section>
